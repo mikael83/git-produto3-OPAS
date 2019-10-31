@@ -542,6 +542,39 @@ ggplot(data=agravo_plot, aes(x=ano, y=Freq, fill=Var1)) +
   theme_minimal()  + labs(x="Hepatite viral", y = "Frequência de agravos") + scale_fill_manual("Agravos", values = c("carcinoma hepatocelular" = "#f8766d", "cirrose" = "#00bfc4", "transplante de fígado" = "#a667d0"))
 
 
+##########################################################################################
+############################  Scatter plot agravos por ano ###############################
+##########################################################################################
 
+hepc_carc_hepat_anti_join <- hepc_carc_hepat_anti_join %>% separate(DT_OCOR, sep="-", into = c("ano", "mes", "dia"))
 
+hepc_cirrose_anti_join <- hepc_cirrose_anti_join %>% separate(DT_OCOR, sep="-", into = c("ano", "mes", "dia"))
 
+hepc_trans_anti_join <- hepc_trans_anti_join %>% separate(DT_OCOR, sep="-", into = c("ano", "mes", "dia"))
+
+carc_hepat_plot <- table(hepc_carc_hepat_anti_join$ano)
+carc_hepat_plot <- as.data.frame(carc_hepat_plot)
+carc_hepat_plot$agravo <- "carcinoma hepatocelular"
+
+cirrose_plot <- table(hepc_cirrose_anti_join$ano)
+cirrose_plot <- as.data.frame(cirrose_plot)
+cirrose_plot$agravo <- "cirrose"
+
+trans_plot <- table(hepc_trans_anti_join$ano)
+trans_plot <- as.data.frame(trans_plot)
+trans_plot$agravo <- " transplante de fígado"
+
+agravos_plot <- do.call("rbind", list(carc_hepat_plot, cirrose_plot, trans_plot))
+
+################# scatter plot linhas ########################
+ggplot(data = agravos_plot, aes(x = Var1, 
+                             y = Freq, 
+                             group=agravo, 
+                             color=agravo )) +
+  geom_line() +
+  geom_point() + 
+  labs( 
+    y="Frequência", 
+    x="Ano"
+  ) + geom_text(aes(label=Freq),hjust=0, vjust=0, check_overlap = TRUE, size = 3) 
+#############################################################
