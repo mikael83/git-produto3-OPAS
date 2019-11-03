@@ -1,7 +1,7 @@
-############ Produto 3 ###########################
+l############ Produto 3 ###########################
 ##################################################
 ###### script desenvolvido por Mikael Lemos ######
-###### vers?o 1.0 - 22.07.2019 ###################
+###### vers?o 1.0 - 24.10.2019 ###################
 ##################################################
 
 ######
@@ -505,15 +505,12 @@ morte_agravo_plot$ano <- "HCV - 2006-2016"
 ggplot(data=morte_agravo_plot, aes(x=ano, y=Freq, fill=Var1)) +
   geom_bar(stat="identity", width = 0.4) +
   geom_text(aes(label=Freq), position = position_stack(vjust = 0.5))+
-  theme_minimal()  + labs(x="Hepatite viral", y = "Frequência de óbitos") + labs(fill = "Agravos")
+  theme_minimal()  + labs(x="Hepatite viral", y = "Frequência de óbitos") + labs(fill = "CID") + ggtitle("a)") +  theme(plot.title = element_text(size = 12, face = "plain"))
 
 
 ######## agravos vivos - 2008 - 2018 ########
 
 hepc_carc_hepat_anti_join <- unite(hepc_carc_hepat_anti_join, "CID", CID1, CID2, CID3,CID4, CID5, CID6, CID7, CID8, CID9, CID10, CID11, CID12, sep = " ")
-
-hepc_carc_hepat_anti_join <- unite(hepc_carc_hepat_anti_join, "PROCEDIMENTO", PROCEDIMENTO1, PROCEDIMENTO2,PROCEDIMENTO3, sep = " ")
-
 
 hepc_cirrose_anti_join <- unite(hepc_cirrose_anti_join, "CID", CID1, CID2, CID3,CID4, CID5, CID6, CID7, CID8, CID9, CID10, CID11, CID12, sep = " ")
 
@@ -534,12 +531,13 @@ agravo_plot <- as.data.frame(agravo_plot)
 
 agravo_plot$ano <- "HCV - 2008-2018"
 
-################################ Plot mortes por agravos ##################################
+################################ Plot  por agravos ##################################
 
 ggplot(data=agravo_plot, aes(x=ano, y=Freq, fill=Var1)) +
   geom_bar(stat="identity", width = 0.4) +
   geom_text(aes(label=Freq), position = position_stack(vjust = 0.5))+
-  theme_minimal()  + labs(x="Hepatite viral", y = "Frequência de agravos") + scale_fill_manual("Agravos", values = c("carcinoma hepatocelular" = "#f8766d", "cirrose" = "#00bfc4", "transplante de fígado" = "#a667d0"))
+  theme_minimal()  + labs(x="Hepatite viral", y = "Frequência") + scale_fill_manual("CID", values = c("carcinoma hepatocelular" = "#f8766d", "cirrose" = "#00bfc4", "transplante de fígado" = "#a667d0")) + ggtitle("a)") + 
+  theme(plot.title = element_text(size = 12, face = "plain"))
 
 
 ##########################################################################################
@@ -554,27 +552,205 @@ hepc_trans_anti_join <- hepc_trans_anti_join %>% separate(DT_OCOR, sep="-", into
 
 carc_hepat_plot <- table(hepc_carc_hepat_anti_join$ano)
 carc_hepat_plot <- as.data.frame(carc_hepat_plot)
-carc_hepat_plot$agravo <- "carcinoma hepatocelular"
+carc_hepat_plot$Agravos <- "carcinoma hepatocelular"
 
 cirrose_plot <- table(hepc_cirrose_anti_join$ano)
 cirrose_plot <- as.data.frame(cirrose_plot)
-cirrose_plot$agravo <- "cirrose"
+cirrose_plot$Agravos <- "cirrose"
 
 trans_plot <- table(hepc_trans_anti_join$ano)
 trans_plot <- as.data.frame(trans_plot)
-trans_plot$agravo <- " transplante de fígado"
+trans_plot$Agravos <- " transplante de fígado"
 
 agravos_plot <- do.call("rbind", list(carc_hepat_plot, cirrose_plot, trans_plot))
 
+agravos_plot <- rename(agravos_plot, CID = Agravos)
+
+agravos_plot$Var1 <- as.character.Date(agravos_plot$Var1)
+
+agravos_plot$Var1 <- as.numeric(agravos_plot$Var1)
+
+
 ################# scatter plot linhas ########################
-ggplot(data = agravos_plot, aes(x = Var1, 
+ggplot(data = agravos_plot, aes(x =Var1, 
                              y = Freq, 
-                             group=agravo, 
-                             color=agravo )) +
+                             group=CID, 
+                             color=CID )) +
   geom_line() +
   geom_point() + 
   labs( 
     y="Frequência", 
     x="Ano"
-  ) + geom_text(aes(label=Freq),hjust=0, vjust=0, check_overlap = TRUE, size = 3) 
+  ) + geom_text(aes(label=Freq),hjust=0, vjust=0, check_overlap = TRUE, size = 3) + scale_x_continuous(breaks = seq(2008, 2018, by = 1)) + scale_color_manual(values=c("#a667d0", "#f8766d", "#00bfc4")) + theme_minimal() 
 #############################################################
+
+
+##########################################################################################
+############################  Scatter plot obitos por ano ###############################
+##########################################################################################
+
+hepc_carc_hepat_rigth_join <- hepc_carc_hepat_rigth_join %>% separate(DT_OCOR.y, sep="-", into = c("ano", "mes", "dia"))
+
+hepc_cirrose_right_join <- hepc_cirrose_right_join %>% separate(DT_OCOR.y, sep="-", into = c("ano", "mes", "dia"))
+
+
+carc_hepat_plot_obt <- table(hepc_carc_hepat_rigth_join$ano)
+carc_hepat_plot_obt <- as.data.frame(carc_hepat_plot_obt)
+carc_hepat_plot_obt$Agravos <- "carcinoma hepatocelular"
+
+cirrose_plot_obt <- table(hepc_cirrose_right_join$ano)
+cirrose_plot_obt <- as.data.frame(cirrose_plot_obt)
+cirrose_plot_obt$Agravos <- "cirrose"
+
+obt_plot <- do.call("rbind", list(carc_hepat_plot_obt, cirrose_plot_obt))
+
+obt_plot <- rename(obt_plot, CID = Agravos)
+
+obt_plot$Var1 <- as.character.Date(obt_plot$Var1)
+obt_plot$Var1 <- as.numeric(obt_plot$Var1)
+
+
+################# scatter plot linhas ########################
+ggplot(data = obt_plot, aes(x =Var1, 
+                                y = Freq, 
+                                group=CID, 
+                                color=CID )) +
+  geom_line() +
+  geom_point() + 
+  labs( 
+    y="Frequência de óbitos", 
+    x="Ano"
+  ) + geom_text(aes(label=Freq),hjust=0, vjust=0, check_overlap = TRUE, size = 3) + scale_x_continuous(breaks = seq(2006, 2016, by = 1)) + scale_color_manual(values=c("#f8766d", "#00bfc4")) + theme_minimal() 
+#############################################################
+
+################################################## comparação tabela completa #############################################
+SIM_hepc_cir_un$ID_PACIENTE <- as.character(SIM_hepc_cir_un$ID_PACIENTE)
+SIM_hepc_hepatocel$ID_PACIENTE <- as.character(SIM_hepc_hepatocel$ID_PACIENTE)
+
+SIM_hepc_cir_un <- SIM_hepc_cir_un %>% unite( "CID", CID1, CID2, CID3,CID4, CID5, CID6, CID7, CID8, CID9, CID10, CID11, CID12, CID13, CID14, CID15, CID16, CID17, CID18, CID19, CID20, CID21, CID22, CID23, CID24, CID25, CID26, sep = " ")
+
+SIM_hepc_cir_un$agravo_morte <- "cirrose"
+
+SIM_hepc_hepatocel <- SIM_hepc_hepatocel %>% unite( "CID", CID1, CID2, CID3,CID4, CID5, CID6, CID7, CID8, CID9, CID10, CID11, CID12, CID13, CID14, CID15, CID16, CID17, CID18, CID19, CID20, CID21, CID22, CID23, CID24, CID25, CID26, sep = " ")
+
+ctable_DF = compare_df(SIM_hepc_cir_un, SIM_hepc_hepatocel ,  c("ID_PACIENTE"))
+
+print(ctable_DF$html_output)
+############################################################################################################################
+
+################################################## comparação ID ##########################################################
+SIM_hepc_cir_un$ID_PACIENTE <- as.character(SIM_hepc_cir_un$ID_PACIENTE)
+SIM_hepc_hepatocel$ID_PACIENTE <- as.character(SIM_hepc_hepatocel$ID_PACIENTE)
+
+cirrose_ID_paciente <- SIM_hepc_hepatocel$ID_PACIENTE
+
+hepatocel_ID_paciente <- SIM_hepc_hepatocel$ID_PACIENTE
+
+cirrose_ID_paciente <- as.data.frame(cirrose_ID_paciente)
+
+cirrose_ID_paciente <- rename(cirrose_ID_paciente,  ID_PACIENTE = cirrose_ID_paciente )
+
+hepatocel_ID_paciente <- as.data.frame(hepatocel_ID_paciente)
+
+hepatocel_ID_paciente <- rename(hepatocel_ID_paciente,  ID_PACIENTE = hepatocel_ID_paciente )
+
+ID_paciente <- do.call("rbind", list(cirrose_ID_paciente, hepatocel_ID_paciente))
+
+distinct_ID_paciente <- distinct(ID_paciente)
+############################################################################################################################
+
+############# Pie chart agravos ##############
+colors = c("#f8766d", "#00bfc4" , "#a667d0" )
+             
+# Pie Chart with Percentages
+slices <- c(277, 657, 146)
+lbls <- c("carcinoma hepatocelular", "cirrose", "transplante de fígado" )
+pct <- round(slices/sum(slices)*100)
+lbls <- paste(lbls, pct) # add percents to labels
+lbls <- paste(lbls,"%",sep="") # ad % to labels
+pie(slices,labels = lbls, col=colors,
+    main="b)                                                                                            ", cex.main = 1.0, font.main = 1) 
+
+#############################################
+
+
+############# Pie chart  óbitos ##############
+
+# Pie Chart with Percentages
+slices <- c(4912, 2246)
+lbls <- c("carcinoma hepatocelular", "cirrose" )
+pct <- round(slices/sum(slices)*100)
+lbls <- paste(lbls, pct) # add percents to labels
+lbls <- paste(lbls,"%",sep="") # ad % to labels
+pie(slices,labels = lbls, col=colors,
+    main="b)                                                                                                           " , cex.main = 1.0, font.main = 1)
+
+#############################################
+
+################## Barplot agravos por estado 
+
+carc_hepat_plot_uf <- table(hepc_carc_hepat_anti_join$UF_OCOR)
+carc_hepat_plot_uf <- as.data.frame(carc_hepat_plot_uf)
+carc_hepat_plot_uf$Agravos <- "carcinoma hepatocelular"
+
+cirrose_plot_uf <- table(hepc_cirrose_anti_join$UF_OCOR)
+cirrose_plot_uf <- as.data.frame(cirrose_plot_uf)
+cirrose_plot_uf$Agravos <- "cirrose"
+
+trans_plot_uf <- table(hepc_trans_anti_join$UF_OCOR)
+trans_plot_uf <- as.data.frame(trans_plot_uf)
+trans_plot_uf$Agravos <- " transplante de fígado"
+
+agravos_plot_uf <- do.call("rbind", list(carc_hepat_plot_uf, cirrose_plot_uf, trans_plot_uf))
+
+agravos_plot_uf <- rename(agravos_plot_uf, CID=Agravos)
+
+agravos_plot_uf <- filter(agravos_plot_uf, Freq!=0)
+
+ggplot(data=agravos_plot_uf , aes(x=reorder(Var1, -Freq), y=Freq , fill=CID)) +
+  geom_bar(stat="identity") +
+  geom_text(aes(label=Freq), position = position_stack(vjust = 0.8), size=2.5)+
+  theme_minimal()  + labs(x="UF", y = "Frequência") + scale_fill_manual(values=c('#a667d0','#f8766d', "#00bfc4" ))
+
+
+###########################################
+
+
+###########################   Barplot agravos por estado  - dodge ##########################
+ggplot(data=agravos_plot_uf , aes(x=reorder(Var1, -Freq), y=Freq , fill=CID)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  geom_text(aes(label=Freq),vjust=-0.3, position = position_dodge(0.9), size=2.5)+
+  theme_minimal()  + labs(x="UF", y = "Frequência") + scale_fill_manual(values=c('#a667d0','#f8766d', "#00bfc4" ))
+########################################################
+
+
+################# Barplot óbitos por estado 
+
+carc_hepat_plot_obt_uf <- table(hepc_carc_hepat_rigth_join$UF_OCOR.y)
+carc_hepat_plot_obt_uf <- as.data.frame(carc_hepat_plot_obt_uf)
+carc_hepat_plot_obt_uf$CID <- "carcinoma hepatocelular"
+
+cirrose_plot_obt_uf <- table(hepc_cirrose_right_join$UF_OCOR.y)
+cirrose_plot_obt_uf <- as.data.frame(cirrose_plot_obt_uf)
+cirrose_plot_obt_uf$CID <- "cirrose"
+
+obt_plot_uf <- do.call("rbind", list(carc_hepat_plot_obt_uf, cirrose_plot_obt_uf))
+
+obt_plot_uf <- filter(obt_plot_uf, Freq!=0)
+
+ggplot(data=obt_plot_uf , aes(x=reorder(Var1, -Freq), y=Freq , fill=CID)) +
+  geom_bar(stat="identity") +
+  geom_text(aes(label=Freq), position = position_stack(vjust = 0.8), size=2.5)+
+  theme_minimal()  + labs(x="UF", y = "Frequência de óbitos") + scale_fill_manual(values=c('#f8766d', "#00bfc4" ))
+
+###########################################
+
+###########################   Barplot obitos por estado  - dodge ##########################
+ggplot(data=obt_plot_uf , aes(x=reorder(Var1, -Freq), y=Freq , fill=CID)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  geom_text(aes(label=Freq),vjust=-0.3, position = position_dodge(0.9), size=2.5)+
+  theme_minimal()  + labs(x="UF", y = "Frequência de óbitos") + scale_fill_manual(values=c('#f8766d', "#00bfc4" ))
+########################################################
+
+
+
