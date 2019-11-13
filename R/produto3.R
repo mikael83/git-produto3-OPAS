@@ -4400,6 +4400,10 @@ write.csv(obt_plot_uf, file = '/Volumes/Mikael_backup3/produto3/obt_plot_uf.csv'
 
 br_tratamentos_plot <- read.csv('/Volumes/Mikael_backup3/produto3/br_tratamento.csv' )
 
+br_tratamentos_plot <- read.csv('/produto3/br_tratamento.csv' )
+
+obt_plot <-  read.csv('/produto3/obt_plot.csv' )
+
 br_tratamentos_plot <- select(br_tratamentos_plot, -X)
 
 agravos_plot$UF <- ""
@@ -4408,7 +4412,11 @@ agravos_plot <- select(agravos_plot, Var1, Freq, UF, tratamentoCID = CID )
 
 obt_plot$UF <- ""
 
-obt_plot <- select(obt_plot, Var1, Freq, UF, tratamentoCID = CID )
+obt_plot <- select(obt_plot, -X)
+
+obt_plot <- select(obt_plot, Var1, Freq, UF, Tratamento_CID = CID )
+
+br_tratamentos_plot <- select(br_tratamentos_plot, Var1, Freq, UF, Tratamento_CID = tratamentoCID )
 
 
 br_tratamento_agravos_plot <- do.call("rbind", list( br_tratamentos_plot, agravos_plot ))
@@ -4436,18 +4444,18 @@ br_tratamento_obt_plot <- do.call("rbind", list( br_tratamentos_plot, obt_plot )
 ################# scatter plot linhas ########################
 ggplot(data = df_obt_trat , aes(x =Var1, 
                                                y = Freqt, 
-                                               group=Procedimentos_hepC_CID_óbitos, 
-                                               color=Procedimentos_hepC_CID_óbitos )) + geom_line() +
+                                               group=Tratamento_CID, 
+                                               color=Tratamento_CID )) + geom_line() +
   geom_point() + 
   labs( 
-    y="Frequência (log2)", 
+    y="Frequ�ncia (log2)", 
     x="Ano"
   ) + geom_text(aes(label=Freqt),hjust=0, vjust=0, check_overlap = TRUE, size = 3) + scale_x_continuous(breaks = seq(2006, 2018, by = 1)) + theme_minimal() + scale_y_continuous(trans="log2") + scale_color_brewer(palette = "Paired")
 #############################################################
 
  df_agravo_trat <- br_tratamento_agravos_plot  %>% group_by(tratamentoCID, Var1) %>% summarise("Freqt"  = sum(Freq))
 
-df_obt_trat <- br_tratamento_obt_plot  %>% group_by(tratamentoCID, Var1) %>% summarise("Freqt"  = sum(Freq))
+df_obt_trat <- br_tratamento_obt_plot  %>% group_by(Tratamento_CID, Var1) %>% summarise("Freqt"  = sum(Freq))
 
 brewer.pal(n = 12, name = "Paired")
 
@@ -4463,20 +4471,20 @@ df_obt_trat <- select(df_obt_trat, Procedimentos_hepC_CID_óbitos = tratamentoCI
 
 dr_proc_uf <- br_tratamentos_plot %>% group_by(tratamentoCID, UF) %>% summarise("Freq"  = sum(Freq))
 
-
+dr_proc_uf <- select( dr_proc_uf, Tratamento = tratamentoCID , UF, Freq  )
 #### 1 #####
 ################################################
-ggplot(data=dr_proc_uf , aes(x=reorder(UF, -Freq), y=Freq , fill=tratamentoCID)) +
+ggplot(data=dr_proc_uf , aes(x=reorder(UF, -Freq), y=Freq , fill=Tratamento)) +
   geom_bar(stat="identity") +
   geom_text(aes(label=Freq), position = position_stack(vjust = 0.8), size=2.5)+
-  theme_minimal()  + labs(x="UF", y = "Frequência (log10)") + scale_color_brewer(palette = "Paired") + scale_y_log10()
+  theme_minimal()  + labs(x="UF", y = "Frequ�ncia (log10)") + scale_color_brewer(palette = "Paired") + scale_y_log10()
 ###########################################
 
 #### 2 #####
 ######################################################
-ggplot(data=dr_proc_uf , aes(x=reorder(UF, -Freq), y=Freq , fill=tratamentoCID)) +
+ggplot(data=dr_proc_uf , aes(x=reorder(UF, -Freq), y=Freq , fill=Tratamento)) +
   geom_bar(stat="identity") +
-  theme_minimal()  + labs(x="UF", y = "Frequência") + scale_color_brewer(palette = "Paired") 
+  theme_minimal()  + labs(x="UF", y = "Frequ�ncia") + scale_color_brewer(palette = "Paired") 
 ######################################################
 
 #### 3 ####
